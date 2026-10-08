@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080a0d">
+  <title>Crypto Bot</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root{--bg:#080a0d;--panel:#10141a;--panel2:#151b22;--line:#29323d;--text:#f3f6f9;--muted:#8c98a6;--green:#16d995;--red:#ff5e68;--silver:#d7dde4}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#18202a 0%,var(--bg) 48%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:18px 14px 90px}
+    .wrap{max-width:620px;margin:0 auto}.top{display:flex;align-items:center;gap:12px;margin:8px 0 22px}.logo{width:44px;height:44px;border:1px solid #56616d;border-radius:50%;display:grid;place-items:center;font-size:21px;background:linear-gradient(145deg,#2a333e,#080a0d);box-shadow:0 0 20px #ffffff0a}
+    h1{font-size:20px;margin:0}.sub{color:var(--muted);font-size:12px;margin-top:3px}.tag{margin-left:auto;font-size:10px;letter-spacing:1px;border:1px solid #47515c;border-radius:99px;padding:6px 8px;color:#c2cad3}
+    .card{background:linear-gradient(145deg,#141a21,#0c0f13);border:1px solid var(--line);border-radius:18px;padding:17px;margin-bottom:13px;box-shadow:0 10px 28px #0004}
+    .label{font-size:12px;color:var(--muted)}.balance{font-size:34px;font-weight:750;letter-spacing:-1px;margin:8px 0}.gain{color:var(--green);font-size:12px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}.asset{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #222b35}.asset:last-child{border:0}.coin{width:37px;height:37px;border-radius:50%;display:grid;place-items:center;background:#222b35;font-weight:800;font-size:13px;border:1px solid #46515e}.name{font-size:14px}.muted{font-size:11px;color:var(--muted);margin-top:3px}.amount{text-align:right;font-size:14px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.btn{border:1px solid #414c58;background:linear-gradient(180deg,#303944,#171d24);color:#fff;border-radius:12px;padding:13px 10px;font-size:13px;font-weight:650;cursor:pointer}.btn.primary{background:linear-gradient(180deg,#dbe1e8,#8b96a3);color:#080a0d;border:0}.btn:active{transform:scale(.99)}
+    .section-title{font-size:16px;font-weight:700;margin:4px 0 10px}.quote{display:grid;grid-template-columns:1fr auto;gap:4px;padding:13px 0;border-bottom:1px solid #222b35}.quote:last-child{border:0}.up{color:var(--green);font-size:12px}.down{color:var(--red);font-size:12px}
+    .tabs{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;background:#090c10ed;backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:9px 4px calc(9px + env(safe-area-inset-bottom));z-index:3}.tabs button{flex:1;max-width:120px;border:0;background:none;color:var(--muted);font-size:10px;padding:5px 0}.tabs button.active{color:white}.tabs span{display:block;font-size:18px;margin-bottom:3px}
+    .screen{display:none}.screen.active{display:block}.notice{font-size:11px;color:#aab4bf;line-height:1.45;margin:12px 2px}.field{width:100%;background:#090d12;border:1px solid #39434e;border-radius:10px;color:#fff;padding:13px;font-size:16px;margin:8px 0 12px}.pillrow{display:flex;gap:8px;margin-bottom:10px}.pill{flex:1;border:1px solid #39434e;background:#11171e;color:#dce2e8;padding:9px 3px;border-radius:9px}.history{padding:13px 0;border-bottom:1px solid #222b35;font-size:13px}.history:last-child{border:0}
+    .admin{font-size:12px;color:#c2cad3}.small{font-size:11px;color:var(--muted);line-height:1.5}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="logo">◇</div><div><h1>Crypto Bot</h1><div class="sub">Демо-портфель · виртуальные средства</div></div><div class="tag">DEMO</div></header>
+
+  <section id="home" class="screen active">
+    <div class="card"><div class="label">Общий виртуальный баланс</div><div class="balance" id="total">$1,250.00</div><div class="gain">▲ Симуляция · без реальных денег</div></div>
+    <div class="card"><div class="section-title">Мой портфель</div><div id="assets"></div></div>
+    <div class="actions"><button class="btn primary" onclick="openScreen('trade')">＋ Купить</button><button class="btn" onclick="openScreen('sell')">↘ Продать</button><button class="btn" onclick="openScreen('market')">⌁ Курсы</button><button class="btn" onclick="openScreen('history')">◷ История</button></div>
+    <div class="notice">ⓘ Демо-версия. Балансы и сделки хранятся только в этом приложении на вашем устройстве. Это не биржа, не кошелёк и не подтверждение реальных платежей.</div>
+  </section>
+
+  <section id="market" class="screen"><div class="card"><div class="section-title">Курсы криптовалют</div><div class="small">Фиксированные примерные цены для демонстрации, не live-котировки.</div><div id="quotes"></div></div></section>
+
+  <section id="trade" class="screen"><div class="card"><div class="section-title">Купить криптовалюту</div><label class="label" for="buyCoin">Монета</label><select id="buyCoin" class="field"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="SOL">Solana (SOL)</option></select><label class="label" for="buyAmount">Сумма в виртуальных USDT</label><input id="buyAmount" class="field" type="number" min="1" step="1" value="100"><div class="pillrow"><button class="pill" onclick="setAmount('buyAmount',25)">25%</button><button class="pill" onclick="setAmount('buyAmount',50)">50%</button><button class="pill" onclick="setAmount('buyAmount',75)">75%</button><button class="pill" onclick="setAmount('buyAmount',100)">MAX</button></div><div class="small" id="buyPreview"></div><button class="btn primary" style="width:100%;margin-top:14px" onclick="trade('buy')">Подтвердить демо-покупку</button></div></section>
+
+  <section id="sell" class="screen"><div class="card"><div class="section-title">Продать криптовалюту</div><label class="label" for="sellCoin">Монета</label><select id="sellCoin" class="field"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="SOL">Solana (SOL)</option></select><label class="label" for="sellAmount">Количество монет</label><input id="sellAmount" class="field" type="number" min="0.000001" step="any" value="0.001"><div class="small" id="sellPreview"></div><button class="btn primary" style="width:100%;margin-top:14px" onclick="trade('sell')">Подтвердить демо-продажу</button></div></section>
+
+  <section id="history" class="screen"><div class="card"><div class="section-title">История операций</div><div id="historyList" class="small">Операций пока нет.</div></div></section>
+  <section id="profile" class="screen"><div class="card"><div class="section-title">Профиль</div><div class="row"><div><div id="profileName">Гость</div><div class="muted" id="profileId">Локальный демо-профиль</div></div><div class="logo">◇</div></div><div class="asset"><div>Всего демо-сделок</div><div id="tradeCount">0</div></div><button class="btn" style="width:100%;margin-top:12px" onclick="resetDemo()">Сбросить демо-баланс</button><p class="small">Сброс удалит виртуальные активы и локальную историю сделок.</p></div></section>
+</div>
+<nav class="tabs">
+  <button class="active" data-screen="home" onclick="openScreen('home')"><span>⌂</span>Главная</button>
+  <button data-screen="trade" onclick="openScreen('trade')"><span>＋</span>Купить</button>
+  <button data-screen="market" onclick="openScreen('market')"><span>⌁</span>Рынок</button>
+  <button data-screen="history" onclick="openScreen('history')"><span>◷</span>История</button>
+  <button data-screen="profile" onclick="openScreen('profile')"><span>♙</span>Профиль</button>
+</nav>
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const prices = {BTC:67243.21, ETH:3243.17, SOL:154.32, USDT:1};
+const names = {BTC:"Bitcoin", ETH:"Ethereum", SOL:"Solana", USDT:"Tether"};
+let state = JSON.parse(localStorage.getItem("cryptoDemoState") || "null") || {cash:1250, coins:{BTC:0.003,ETH:0.1,SOL:2,USDT:0}, history:[]};
+function save(){localStorage.setItem("cryptoDemoState",JSON.stringify(state));render();}
+function money(n){return "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function total(){return state.cash + state.coins.BTC*prices.BTC + state.coins.ETH*prices.ETH + state.coins.SOL*prices.SOL;}
+function openScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.screen===id));renderPreviews();if(tg)tg.HapticFeedback?.selectionChanged();}
+function render(){
+ document.getElementById("total").textContent=money(total());
+ document.getElementById("assets").innerHTML=["USDT","BTC","ETH","SOL"].map(s=>`<div class="asset"><div class="coin">${s==="BTC"?"₿":s==="ETH"?"◆":s==="SOL"?"≋":"₮"}</div><div style="flex:1"><div class="name">${names[s]} (${s})</div><div class="muted">${money(prices[s])} за монету</div></div><div class="amount">${Number(state.coins[s]||0).toFixed(s==="USDT"?2:6)}<div class="muted">${money((state.coins[s]||0)*prices[s])}</div></div></div>`).join("");
+ document.getElementById("quotes").innerHTML=["BTC","ETH","USDT","SOL"].map((s,i)=>`<div class="quote"><div><b>${names[s]} (${s})</b><div class="muted">${money(prices[s])}</div></div><div class="${i===1?'up':'up'}">Демо-цена</div></div>`).join("");
+ document.getElementById("historyList").innerHTML=state.history.length?state.history.slice().reverse().map(h=>`<div class="history"><b>${h.side==="buy"?"Покупка":"Продажа"} ${h.coin}</b><div class="muted">${h.date} · ${h.amount} ${h.coin} · ${money(h.total)} · ДЕМО</div></div>`).join(""):'Операций пока нет.';
+ document.getElementById("tradeCount").textContent=state.history.length;
+ if(tg?.initDataUnsafe?.user){let u=tg.initDataUnsafe.user;document.getElementById("profileName").textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"Пользователь";document.getElementById("profileId").textContent="Telegram ID: "+u.id;}
+ renderPreviews();
+}
+function setAmount(id,pct){document.getElementById(id).value=Math.max(1,Math.floor(state.cash*pct/100));renderPreviews();}
+function renderPreviews(){
+ let bc=document.getElementById("buyCoin").value, ba=Math.max(0,Number(document.getElementById("buyAmount").value||0));
+ document.getElementById("buyPreview").textContent=`Цена: ${money(prices[bc])} · Получите примерно ${(ba/prices[bc]).toFixed(8)} ${bc}. Виртуальный баланс: ${money(state.cash)}.`;
+ let sc=document.getElementById("sellCoin").value, sa=Math.max(0,Number(document.getElementById("sellAmount").value||0));
+ document.getElementById("sellPreview").textContent=`Доступно: ${(state.coins[sc]||0).toFixed(8)} ${sc} · Сумма: ${money(sa*prices[sc])}.`;
+}
+function trade(side){
+ const coin=document.getElementById(side==="buy"?"buyCoin":"sellCoin").value;
+ let amount,totalValue;
+ if(side==="buy"){totalValue=Number(document.getElementById("buyAmount").value);if(!Number.isFinite(totalValue)||totalValue<=0||totalValue>state.cash){alert("Недостаточно виртуальных USDT или неверная сумма.");return;}amount=totalValue/prices[coin];state.cash-=totalValue;state.coins[coin]+=amount;}
+ else {amount=Number(document.getElementById("sellAmount").value);if(!Number.isFinite(amount)||amount<=0||amount>state.coins[coin]){alert("Недостаточно виртуальных монет или неверное количество.");return;}totalValue=amount*prices[coin];state.coins[coin]-=amount;state.cash+=totalValue;}
+ state.history.push({side,coin,amount:amount.toFixed(8),total:totalValue,date:new Date().toLocaleString("ru-RU")});save();alert("Демо-сделка записана. Реальная транзакция не выполнялась.");openScreen("history");
+}
+function resetDemo(){if(confirm("Сбросить виртуальный баланс и историю?")){state={cash:1250,coins:{BTC:0.003,ETH:0.1,SOL:2,USDT:0},history:[]};save();}}
+["buyCoin","sellCoin","buyAmount","sellAmount"].forEach(id=>document.getElementById(id).addEventListener("input",renderPreviews));
+render();
+</script>
+</body></html>
